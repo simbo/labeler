@@ -101,9 +101,11 @@ async function getLabelGlobs(
   try {
     configurationContent = (await readFile(configurationPath)).toString();
   } catch {
-    core.debug('Could not find config file locally. Trying to fetch...');
+    core.debug(
+      'Could not find config file locally. Trying to fetch from the api...'
+    );
+    configurationContent = await fetchContent(client, configurationPath);
   }
-  configurationContent = await fetchContent(client, configurationPath);
 
   // loads (hopefully) a `{[label:string]: string | StringOrMatchConfig[]}`, but is `any`:
   const configObject: any = yaml.load(configurationContent);

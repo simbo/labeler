@@ -42,6 +42,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkGlobs = exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const promises_1 = __nccwpck_require__(3292);
 const yaml = __importStar(__nccwpck_require__(1917));
 const minimatch_1 = __nccwpck_require__(2002);
 function run() {
@@ -114,7 +115,14 @@ function getChangedFiles(client, prNumber) {
 }
 function getLabelGlobs(client, configurationPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const configurationContent = yield fetchContent(client, configurationPath);
+        let configurationContent;
+        try {
+            configurationContent = (yield (0, promises_1.readFile)(configurationPath)).toString();
+        }
+        catch (_a) {
+            core.debug('Could not find config file locally. Trying to fetch from the api...');
+            configurationContent = yield fetchContent(client, configurationPath);
+        }
         // loads (hopefully) a `{[label:string]: string | StringOrMatchConfig[]}`, but is `any`:
         const configObject = yaml.load(configurationContent);
         // transform `any` => `Map<string,StringOrMatchConfig[]>` or throw if yaml is malformed:
@@ -14175,6 +14183,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 3292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 
