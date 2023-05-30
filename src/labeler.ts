@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import {readFile} from 'fs/promises';
 import * as yaml from 'js-yaml';
 import {Minimatch} from 'minimatch';
 
@@ -96,10 +97,13 @@ async function getLabelGlobs(
   client: ClientType,
   configurationPath: string
 ): Promise<Map<string, StringOrMatchConfig[]>> {
-  const configurationContent: string = await fetchContent(
-    client,
-    configurationPath
-  );
+  let configurationContent: string;
+  try {
+    configurationContent = (await readFile(configurationPath)).toString();
+  } catch {
+    core.debug('Could not find config file locally. Trying to fetch...');
+  }
+  configurationContent = await fetchContent(client, configurationPath);
 
   // loads (hopefully) a `{[label:string]: string | StringOrMatchConfig[]}`, but is `any`:
   const configObject: any = yaml.load(configurationContent);
